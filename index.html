@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasbih Voice Counter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
+</head>
+<body class="flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col justify-center items-center px-4">
+        <button id="modeToggle" class="control-button px-8 py-3 font-semibold rounded-full focus:outline-none focus:ring-4 focus:ring-yellow-300">
+            Toggle Mode
+        </button>
+
+        <h1 class="header">Tasbih Counter</h1>
+
+        <div class="tasbih-grid">
+            <div id="subhanallah-card" class="phrase-card">
+                <div class="phrase-name arabic">سُبْحَانَ ٱللَّٰهِ</div>
+                <div id="subhanallah-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="alhamdulillah-card" class="phrase-card">
+                <div class="phrase-name arabic">ٱلْحَمْدُ لِلَّٰهِ</div>
+                <div id="alhamdulillah-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="allahuakbar-card" class="phrase-card">
+                <div class="phrase-name arabic">ٱللَّٰهُ أَكْبَرُ</div>
+                <div id="allahuakbar-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="lailahaillallah-card" class="phrase-card">
+                <div class="phrase-name arabic">لَا إِلَٰهَ إِلَّا ٱللَّٰهُ</div>
+                <div id="lailahaillallah-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="astaghfirullah-card" class="phrase-card">
+                <div class="phrase-name arabic">أَسْتَغْفِرُ ٱللَّٰهَ</div>
+                <div id="astaghfirullah-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="hasbunallah-card" class="phrase-card">
+                <div class="phrase-name arabic">حَسْبُنَا ٱللَّٰهُ وَنِعْمَ ٱلْوَكِيلُ</div>
+                <div id="hasbunallah-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="salawat-extended-card" class="phrase-card">
+                <div class="phrase-name arabic">اللَّهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ</div>
+                <div id="salawat-extended-count" class="phrase-count">0</div>
+            </div>
+            
+            <div id="subhanallah-wa-bihamdihi-card" class="phrase-card">
+                <div class="phrase-name arabic">سُبْحَانَ ٱللَّٰهِ وَبِحَمْدِهِ</div>
+                <div id="subhanallah-wa-bihamdihi-count" class="phrase-count">0</div>
+            </div>
+
+            <div id="subhanallahil-azeem-card" class="phrase-card">
+                <div class="phrase-name arabic">سُبْحَانَ ٱللَّٰهِ ٱلْعَظِيمِ</div>
+                <div id="subhanallahil-azeem-count" class="phrase-count">0</div>
+            </div>
+        </div>    
+
+        <div class="control-buttons-wrapper flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+            <button id="startButton" class="control-button px-8 py-3 font-semibold rounded-full focus:outline-none focus:ring-4 focus:ring-green-300">
+                Start Listening
+            </button>
+            <button id="stopButton" class="control-button px-8 py-3 font-semibold rounded-full focus:outline-none focus:ring-4 focus:ring-red-300" disabled>
+                Stop Listening
+            </button>
+            <button id="resetButton" class="control-button px-8 py-3 font-semibold rounded-full focus:outline-none focus:ring-4 focus:ring-blue-300">
+                Reset Counts
+            </button>
+        </div>
+
+        <div class="text-center">
+            <p id="status" class="status-message">Click "Start Listening" to begin.</p>
+        </div>
+    </main>
+
+    <footer class="text-center text-white text-sm mt-8 pb-4">
+        &copy; 2023 Tasbih Counter. All rights reserved.
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
