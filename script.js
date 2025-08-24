@@ -230,42 +230,27 @@ function initializeRecognition() {
       const transcript = (res[0].transcript || '').trim();
       const normalized = normalizeText(transcript);
       const tokens = tokenize(normalized);
-
-      // compute current occurrences for this result index
       const currentOccurrences = countOccurrencesInTokens(tokens);
       const previousSnapshot = processedOccurrencesPerResult[i] || {};
-      // always update the processed snapshot (so we can inspect interims if needed)
       processedOccurrencesPerResult[i] = currentOccurrences;
 
       if (!isFinal) {
-        // don't commit interim results — only log for debugging
         console.log(`Interim[${i}]:`, transcript, currentOccurrences);
         continue;
       }
-
-      // APPLY ONLY ON FINAL
       const previousApplied = appliedOccurrencesPerResult[i] || {};
       for (const key in committedCounts) {
         const prevAppliedCount = previousApplied[key] || 0;
         const currCount = currentOccurrences[key] || 0;
         const delta = currCount - prevAppliedCount;
         if (delta === 0) continue;
-
-        // update committed count (source of truth)
         committedCounts[key] += delta;
-
-        // start animation to move displayed -> committed
         startAnimationForKey(key);
       }
-
-      // mark this final as applied
       appliedOccurrencesPerResult[i] = currentOccurrences;
-
-      // debug log
       console.log(`Final[${i}]:`, transcript, currentOccurrences, 'committed:', JSON.parse(JSON.stringify(committedCounts)));
     }
 
-    // Update status message based on last result
     const lastIsFinal = event.results[event.results.length - 1].isFinal;
     statusEl.textContent = lastIsFinal ? 'Listening...' : 'Listening... (interim)';
   };
@@ -285,7 +270,7 @@ function initializeRecognition() {
             startButton.disabled = false;
             stopButton.disabled = true;
           }
-        }, 500); // slightly longer restart gap to reduce "mic busy" errors
+        }, 500); 
       } else {
         statusEl.textContent = 'Stopped listening.';
       }
@@ -343,7 +328,6 @@ resetButton.addEventListener('click', () => {
     recognition.stop();
     isListening = false;
   }
-  // clear animations & counts
   for (const key in committedCounts) {
     if (animIntervals[key]) {
       clearInterval(animIntervals[key]);
