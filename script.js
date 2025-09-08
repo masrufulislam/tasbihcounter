@@ -191,9 +191,8 @@ updateAllDisplayFromDisplayedCounts();
 
 // ---------- Speech recognition tracking ----------
 let processedOccurrencesPerResult = []; 
-let appliedOccurrencesPerResult = [];   
-let totalAppliedOccurrences = {};
-for (const key in phrases) totalAppliedOccurrences[key] = 0;
+let maxSeenCounts = {};
+for (const key in phrases) maxSeenCounts[key] = 0;
 
 // ---------- Mobile duplicate-final safeguard ----------
 // Some mobile browsers (esp. Android Chrome) can emit the *same* final result
@@ -239,7 +238,6 @@ function initializeRecognition() {
     statusEl.textContent = 'Listening...';
     processedOccurrencesPerResult = [];
     appliedOccurrencesPerResult = [];
-    for (const key in phrases) totalAppliedOccurrences[key] = 0;
     if (restartTimeout) {
       clearTimeout(restartTimeout);
       restartTimeout = null;
@@ -270,19 +268,22 @@ function initializeRecognition() {
       }
       
       for (const key in committedCounts) {
-        const currCount = currentOccurrences[key] || 0;
-        const prevTotal = totalAppliedOccurrences[key] || 0;
-
-        // Only count the *new* ones beyond the global total so far
-        const delta = Math.max(0, currCount - prevTotal);
-
-        if (delta > 0) {
-          committedCounts[key] += delta;
-          startAnimationForKey(key);
-          totalAppliedOccurrences[key] = currCount;
-        }
+      const currCount = currentOccurrences[key] || 0;
+      const prevMax = maxSeenCounts[key] || 0;
+      let delta = 0;
+    
+      if (currCount > prevMax) {
+        delta = currCount - prevMax;
+      } else if (currCount > 0 && currCount <= prevMax) {
+        delta = currCount; // new cycle, treat as fresh
       }
-
+    
+      if (delta > 0) {
+        committedCounts[key] += delta;
+        startAnimationForKey(key);
+      }
+    
+      maxSeenCounts[key] = currCount;
       console.log(`Final[${i}]:`, transcript, currentOccurrences, 'committed:', JSON.parse(JSON.stringify(committedCounts)));
     }
 
@@ -374,7 +375,6 @@ resetButton.addEventListener('click', () => {
     displayedCounts[key] = 0;
   }
   processedOccurrencesPerResult = [];
-  appliedOccurrencesPerResult = [];
   updateAllDisplayFromDisplayedCounts();
   startButton.disabled = false;
   stopButton.disabled = true;
