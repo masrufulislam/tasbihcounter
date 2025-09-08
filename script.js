@@ -193,6 +193,29 @@ updateAllDisplayFromDisplayedCounts();
 let processedOccurrencesPerResult = []; 
 let appliedOccurrencesPerResult = [];   
 
+// ---------- Mobile duplicate-final safeguard ----------
+// Some mobile browsers (esp. Android Chrome) can emit the *same* final result
+const RECENT_FINALS_WINDOW_MS = 1500; // 1.5s 
+let recentFinals = []; // array of { h: number, t: ms }
+
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 31 + str.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
+function isDuplicateFinal(normalizedStr) {
+  const now = Date.now();
+  // prune old
+  recentFinals = recentFinals.filter(e => now - e.t < RECENT_FINALS_WINDOW_MS);
+  const h = simpleHash(normalizedStr);
+  const seen = recentFinals.some(e => e.h === h);
+  if (!seen) recentFinals.push({ h, t: now });
+  return seen;
+}
+
 // ---------- Recognition init ----------
 function initializeRecognition() {
   recognition = new SpeechRecognition();
@@ -240,6 +263,12 @@ function initializeRecognition() {
       if (!isFinal) {
         // don't commit interim results — only log for debugging
         console.log(`Interim[${i}]:`, transcript, currentOccurrences);
+        continue;
+      }
+
+      // Ignore duplicate finals within a short window (mobile quirk)
+      if (isDuplicateFinal(normalized)) {
+        console.log(`Duplicate final suppressed[${i}]:`, transcript);
         continue;
       }
 
