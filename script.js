@@ -239,6 +239,7 @@ function initializeRecognition() {
     statusEl.textContent = 'Listening...';
     processedOccurrencesPerResult = [];
     appliedOccurrencesPerResult = [];
+    for (const key in phrases) totalAppliedOccurrences[key] = 0;
     if (restartTimeout) {
       clearTimeout(restartTimeout);
       restartTimeout = null;
