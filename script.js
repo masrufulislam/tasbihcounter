@@ -266,31 +266,19 @@ function initializeRecognition() {
         continue;
       }
 
-      // Ignore duplicate finals within a short window (mobile quirk)
-      if (isDuplicateFinal(normalized)) {
-        console.log(`Duplicate final suppressed[${i}]:`, transcript);
-        continue;
-      }
-
-      // APPLY ONLY ON FINAL
       const previousApplied = appliedOccurrencesPerResult[i] || {};
       for (const key in committedCounts) {
         const prevAppliedCount = previousApplied[key] || 0;
         const currCount = currentOccurrences[key] || 0;
-        const delta = currCount - prevAppliedCount;
-        if (delta === 0) continue;
+        const delta = Math.max(0, currCount - prevAppliedCount);
 
-        // update committed count (source of truth)
-        committedCounts[key] += delta;
-
-        // start animation to move displayed -> committed
-        startAnimationForKey(key);
+        if (delta > 0) {
+          committedCounts[key] += delta;
+          startAnimationForKey(key);
+        }
       }
-
-      // mark this final as applied
       appliedOccurrencesPerResult[i] = currentOccurrences;
 
-      // debug log
       console.log(`Final[${i}]:`, transcript, currentOccurrences, 'committed:', JSON.parse(JSON.stringify(committedCounts)));
     }
 
