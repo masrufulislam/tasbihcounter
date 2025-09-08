@@ -234,14 +234,15 @@ function initializeRecognition() {
     } catch (e) { /* ignore */ }
   }
 
-  recognition.onstart = () => {
+   recognition.onstart = () => {
     statusEl.textContent = 'Listening...';
     processedOccurrencesPerResult = [];
-    appliedOccurrencesPerResult = [];
     if (restartTimeout) {
       clearTimeout(restartTimeout);
       restartTimeout = null;
     }
+    startButton.disabled = true;
+    stopButton.disabled = false;
   };
 
   recognition.onresult = (event) => {
