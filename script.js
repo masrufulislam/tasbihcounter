@@ -192,6 +192,8 @@ updateAllDisplayFromDisplayedCounts();
 // ---------- Speech recognition tracking ----------
 let processedOccurrencesPerResult = []; 
 let appliedOccurrencesPerResult = [];   
+let totalAppliedOccurrences = {};
+for (const key in phrases) totalAppliedOccurrences[key] = 0;
 
 // ---------- Mobile duplicate-final safeguard ----------
 // Some mobile browsers (esp. Android Chrome) can emit the *same* final result
@@ -265,19 +267,20 @@ function initializeRecognition() {
         console.log(`Interim[${i}]:`, transcript, currentOccurrences);
         continue;
       }
-
-      const previousApplied = appliedOccurrencesPerResult[i] || {};
+      
       for (const key in committedCounts) {
-        const prevAppliedCount = previousApplied[key] || 0;
         const currCount = currentOccurrences[key] || 0;
-        const delta = Math.max(0, currCount - prevAppliedCount);
+        const prevTotal = totalAppliedOccurrences[key] || 0;
+
+        // Only count the *new* ones beyond the global total so far
+        const delta = Math.max(0, currCount - prevTotal);
 
         if (delta > 0) {
           committedCounts[key] += delta;
           startAnimationForKey(key);
+          totalAppliedOccurrences[key] = currCount;
         }
       }
-      appliedOccurrencesPerResult[i] = currentOccurrences;
 
       console.log(`Final[${i}]:`, transcript, currentOccurrences, 'committed:', JSON.parse(JSON.stringify(committedCounts)));
     }
