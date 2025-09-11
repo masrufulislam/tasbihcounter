@@ -191,31 +191,7 @@ updateAllDisplayFromDisplayedCounts();
 
 // ---------- Speech recognition tracking ----------
 let processedOccurrencesPerResult = []; 
-let maxSeenCounts = {};
-for (const key in phrases) maxSeenCounts[key] = 0;
-
-// ---------- Mobile duplicate-final safeguard ----------
-// Some mobile browsers (esp. Android Chrome) can emit the *same* final result
-const RECENT_FINALS_WINDOW_MS = 1500; // 1.5s 
-let recentFinals = []; // array of { h: number, t: ms }
-
-function simpleHash(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h * 31 + str.charCodeAt(i)) | 0;
-  }
-  return h;
-}
-
-function isDuplicateFinal(normalizedStr) {
-  const now = Date.now();
-  // prune old
-  recentFinals = recentFinals.filter(e => now - e.t < RECENT_FINALS_WINDOW_MS);
-  const h = simpleHash(normalizedStr);
-  const seen = recentFinals.some(e => e.h === h);
-  if (!seen) recentFinals.push({ h, t: now });
-  return seen;
-}
+let appliedOccurrencesPerResult = [];   
 
 // ---------- Recognition init ----------
 function initializeRecognition() {
@@ -234,15 +210,14 @@ function initializeRecognition() {
     } catch (e) { /* ignore */ }
   }
 
-   recognition.onstart = () => {
+  recognition.onstart = () => {
     statusEl.textContent = 'Listening...';
     processedOccurrencesPerResult = [];
+    appliedOccurrencesPerResult = [];
     if (restartTimeout) {
       clearTimeout(restartTimeout);
       restartTimeout = null;
     }
-    startButton.disabled = true;
-    stopButton.disabled = false;
   };
 
   recognition.onresult = (event) => {
@@ -267,24 +242,26 @@ function initializeRecognition() {
         console.log(`Interim[${i}]:`, transcript, currentOccurrences);
         continue;
       }
-      
+
+      // APPLY ONLY ON FINAL
+      const previousApplied = appliedOccurrencesPerResult[i] || {};
       for (const key in committedCounts) {
-      const currCount = currentOccurrences[key] || 0;
-      const prevMax = maxSeenCounts[key] || 0;
-      let delta = 0;
-    
-      if (currCount > prevMax) {
-        delta = currCount - prevMax;
-      } else if (currCount > 0 && currCount <= prevMax) {
-        delta = currCount; // new cycle, treat as fresh
-      }
-    
-      if (delta > 0) {
+        const prevAppliedCount = previousApplied[key] || 0;
+        const currCount = currentOccurrences[key] || 0;
+        const delta = currCount - prevAppliedCount;
+        if (delta === 0) continue;
+
+        // update committed count (source of truth)
         committedCounts[key] += delta;
+
+        // start animation to move displayed -> committed
         startAnimationForKey(key);
       }
-    
-      maxSeenCounts[key] = currCount;
+
+      // mark this final as applied
+      appliedOccurrencesPerResult[i] = currentOccurrences;
+
+      // debug log
       console.log(`Final[${i}]:`, transcript, currentOccurrences, 'committed:', JSON.parse(JSON.stringify(committedCounts)));
     }
 
@@ -376,6 +353,7 @@ resetButton.addEventListener('click', () => {
     displayedCounts[key] = 0;
   }
   processedOccurrencesPerResult = [];
+  appliedOccurrencesPerResult = [];
   updateAllDisplayFromDisplayedCounts();
   startButton.disabled = false;
   stopButton.disabled = true;
